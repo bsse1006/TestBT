@@ -1,0 +1,41 @@
+No. of ED: 727
+No. of NED: 59
+No. of FG: 363
+No. of existing bug reports: 2580
+No. of existing bug report product: 1
+No. of existing bug report component: 6
+No. of testing bug reports: 1920
+No. of testing bug report product: 1
+No. of testing bug report component: 6
+
+
+----k----avg recall----avg precision----avg f-score----
+----3----6.461----25.48----9.805----
+----6----10.20----20.52----12.76----
+----9----12.56----17.11----13.48----
+----12----14.24----14.73----13.45----
+----15----15.62----13.07----13.23----
+
+
+No. of test reports: 1920
+Top 1: 0.071
+Top 2: 0.094
+Top 3: 0.104
+Top 4: 0.114
+Top 5: 0.122
+
+
+Average Effectiveness: 
+Top 1: 0.071
+Top 2: 0.116
+Top 3: 0.147
+Top 4: 0.185
+Top 5: 0.229
+
+
+Mean Reciprocal Rank: 
+Top 1: 0.071
+Top 2: 0.083
+Top 3: 0.086
+Top 4: 0.088
+Top 5: 0.090
