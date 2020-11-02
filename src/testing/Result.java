@@ -22,7 +22,7 @@ public class Result
 
     double recall;
 
-    double rank = 61;
+    double rank = 31;
 
     int match = 0;
 
@@ -38,7 +38,7 @@ public class Result
 
     private void rankSum()
     {
-        for (int i=0; i<60; i++)
+        for (int i=0; i<30; i++)
         {
             if(testBug.getListOfSolvers().contains(sortedDevs.get(i)))
             {
@@ -53,22 +53,22 @@ public class Result
     {
         for (int i=0; ; i++)
         {
-            if (eds.size()>i&&sortedDevs.size()<60)
+            if (eds.size()>i&&sortedDevs.size()<30)
             {
                 sortedDevs.add(eds.get(i));
             }
 
-            if (neds.size()>i&&sortedDevs.size()<60)
+            if (neds.size()>i&&sortedDevs.size()<30)
             {
                 sortedDevs.add(neds.get(i));
             }
 
-            if (fgs.size()>i&&sortedDevs.size()<60)
+            if (fgs.size()>i&&sortedDevs.size()<30)
             {
                 sortedDevs.add(fgs.get(i));
             }
 
-            if (sortedDevs.size()>=60)
+            if (sortedDevs.size()>=30)
             {
                 break;
             }

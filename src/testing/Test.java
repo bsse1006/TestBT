@@ -140,10 +140,10 @@ public class Test
             {
                 experiencedDevelopers.add(developer);
             }
-            /*else
+            else
             {
                 chooseNewDeveloperOrFreshGraduate(developer);
-            }*/
+            }
         }
 
         //System.out.println("--" + experiencedDevelopers.size());
@@ -207,9 +207,9 @@ public class Test
 
         System.out.println("cp3");
 
-        /*SourceCodeParser scp = new SourceCodeParser();
+        SourceCodeParser scp = new SourceCodeParser();
 
-        listOfSourceCodeLibraryImports = scp.getListOfLibraryImports();*/
+        listOfSourceCodeLibraryImports = scp.getListOfLibraryImports();
 
         indexing ();
 
@@ -221,9 +221,9 @@ public class Test
     private void indexing() throws IOException {
         edIndexing();
         System.out.println("ed indexed");
-        //nedIndexing();
+        nedIndexing();
         System.out.println("ned indexed");
-        //fgIndexing();
+        fgIndexing();
         System.out.println("fg indexed");
     }
 
@@ -472,11 +472,20 @@ public class Test
         System.out.println(testBugs.size());
         for (Bug testBug: testBugs)
         {
-            readEdIndex(testBug);
-            //readNedIndex(testBug);
-            //readFgIndex(testBug);
+            if (experiencedDevelopers.size()>0)
+            {
+                readEdIndex(testBug);
+            }
+            if (newExperiencedDevelopers.size()>0)
+            {
+                readNedIndex(testBug);
+            }
+            if (freshGraduates.size()>0)
+            {
+                readFgIndex(testBug);
+            }
 
-            if(eds.size()+neds.size()+fgs.size()<60)
+            if(eds.size()+neds.size()+fgs.size()<30)
             {
                 eds.clear();
                 neds.clear();
@@ -503,14 +512,14 @@ public class Test
                 {
                     updateED(dev);
                 }
-                /*if(neds.contains(dev))
+                if(neds.contains(dev))
                 {
                     updateNED(dev);
                 }
                 if(fgs.contains(dev))
                 {
                     updateFG(dev);
-                }*/
+                }
             }
 
             eds.clear();
@@ -813,20 +822,6 @@ public class Test
 
         return listString;
     }
-
-    /*private String convertListToQuery (List<String> list)
-    {
-        String queryString = "";
-
-        for(String s: list)
-        {
-            queryString = queryString + "content:" + s + " OR ";
-        }
-
-        queryString = queryString.substring(0,queryString.length()-4);
-
-        return queryString;
-    }*/
 
     public void deleteIndex (String path)
     {
