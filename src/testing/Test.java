@@ -555,20 +555,20 @@ public class Test
 
         for(Result result: teamResults)
         {
-            avgRecall = avgRecall + (1.0/result.getRecall());
-            avgMatch = avgMatch + (1.0/result.getMatch());
+            avgRecall = avgRecall + result.getRecall();
+            avgMatch = avgMatch + result.getMatch();
             avgEfficiency = avgEfficiency + (1.0/result.getRank());
 
             if (!Double.isNaN(result.getRank())&&!(result.getRank()==0.0))
             {
-                avgMRR = avgMRR + result.getRank();
+                avgMRR = avgMRR + (1.0/result.getRank());
             }
         }
 
-        recall = teamResults.size()/avgRecall;
-        match = teamResults.size()/avgMatch;
+        recall = avgRecall/teamResults.size();
+        match = avgMatch/teamResults.size();
         efficiency = teamResults.size()/avgEfficiency;
-        MRR = teamResults.size()/avgMRR;
+        MRR = avgMRR/teamResults.size();
 
         /*teamPrecision.add(Double.toString(avgPrecision));
         teamRecall.add(Double.toString(avgRecall));
