@@ -47,6 +47,8 @@ public class Test
     List<String> neds = new ArrayList<>();
     List<String> fgs = new ArrayList<>();
 
+    private int iteration = 1;
+
     Bug currentBug;
 
     List<Result> teamResults = new ArrayList<>();
@@ -502,7 +504,13 @@ public class Test
 
             teamResults.add(result);
 
+            System.out.println("Iteration: " + iteration);
+
             System.out.println("----" + result.getRecall() + "----" + result.getMatch() + "----" + result.getRank());
+
+            harmonicAverageResult();
+            System.out.println("Recall: " + recall + "--" + "Match: " + match + "--" + "Efficiency: " + efficiency + "--"
+                    + "MRR: " + MRR);
 
             currentBug = testBug;
 
@@ -527,16 +535,50 @@ public class Test
             fgs.clear();
 
             /*System.out.println("result done" + testBug);*/
+
+            iteration++;
         }
 
         testBugs.removeAll(poorBugs);
 
         System.out.println(testBugs.size());
 
-        averageresult();
+        harmonicAverageResult();
     }
 
-    private void averageresult()
+    private void harmonicAverageResult()
+    {
+        double avgRecall = 0;
+        double avgMatch = 0;
+        double avgEfficiency = 0;
+        double avgMRR = 0;
+
+        for(Result result: teamResults)
+        {
+            avgRecall = avgRecall + (1.0/result.getRecall());
+            avgMatch = avgMatch + (1.0/result.getMatch());
+            avgEfficiency = avgEfficiency + (1.0/result.getRank());
+
+            if (!Double.isNaN(result.getRank())&&!(result.getRank()==0.0))
+            {
+                avgMRR = avgMRR + result.getRank();
+            }
+        }
+
+        recall = teamResults.size()/avgRecall;
+        match = teamResults.size()/avgMatch;
+        efficiency = teamResults.size()/avgEfficiency;
+        MRR = teamResults.size()/avgMRR;
+
+        /*teamPrecision.add(Double.toString(avgPrecision));
+        teamRecall.add(Double.toString(avgRecall));
+        teamFScore.add(Double.toString(avgFScore));
+        avgTopNForSortedResult.add(Double.toString(avgTopN));
+        avgEfficiencyList.add(Double.toString(avgEfficiency));
+        avgMRRList.add(Double.toString(avgMRR));*/
+    }
+
+    private void averageResult()
     {
         double avgRecall = 0;
         double avgMatch = 0;
@@ -801,7 +843,7 @@ public class Test
             Document document = searcher.doc(scoreDoc.doc);
             //System.out.println(document);
             fgs.add(document.get("name"));
-            System.out.println("read " + document.get("name"));
+            //System.out.println("read " + document.get("name"));
             //System.out.println("------------------" + fgs.size());
             /*System.out.println(document.get("name"));
             System.out.println(scoreDoc.doc);
