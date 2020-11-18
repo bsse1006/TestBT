@@ -13,25 +13,25 @@ public class CloneGitRepos
 {
     private String owner;
     private String url;
+    private String directory;
 
-    public CloneGitRepos() throws IOException {
+    public CloneGitRepos(String directory) throws IOException {
+        this.directory = directory;
         gitReposCloning();
     }
 
     private void cloneRepo()
     {
-        System.out.println("in");
         Git git = Git.cloneRepository()
                 .setURI(url)
-                .setDirectory(new File("C:\\Users\\Hp\\Desktop\\ClonedGitRepos\\" + owner + "\\" + url.substring(url.lastIndexOf('/')+1, url.length())))
+                .setDirectory(new File(directory + "\\" + owner + "\\" + url.substring(url.lastIndexOf('/')+1, url.length())))
                 .call();
-        System.out.println("out");
     }
 
     public void gitReposCloning() throws IOException
     {
         String data = "";
-        data = new String(Files.readAllBytes(Paths.get("C:\\Users\\Hp\\Desktop\\TestBT\\src\\files\\GitRepos")));
+        data = new String(Files.readAllBytes(Paths.get("src/files/GitRepos")));
 
         StringTokenizer st = new StringTokenizer(data);
         while (st.hasMoreTokens())
@@ -53,8 +53,6 @@ public class CloneGitRepos
             {
                 owner = s;
             }
-
-            System.out.println(owner + "----" + url);
         }
     }
 }

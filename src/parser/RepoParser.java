@@ -27,7 +27,7 @@ public class RepoParser
 
     public RepoParser(String filePath) throws Exception {
         this.filePath = filePath;
-        sourceCodeParser(filePath);
+        sourceCodeParser(this.filePath);
     }
 
     public List<String> getListOfRepositoryKeywords() {
@@ -40,7 +40,6 @@ public class RepoParser
 
     public void parseJavaLibraries (String javaFIlePath) throws FileNotFoundException
     {
-        //System.out.println(javaFIlePath);
         try {
             File directoryPath = new File(javaFIlePath);
             Scanner sc = new Scanner(directoryPath);
@@ -123,50 +122,6 @@ public class RepoParser
         }
 
         processStringOfKeywords();
-
-        /*File filesList [] = directoryPath.listFiles();
-
-        if(m==1)
-        {
-            System.out.println(folderPath);
-            System.out.println(filesList);
-        }
-
-        if(filesList == null)
-        {
-            return;
-        }
-        //System.out.println("-------------------" + directoryPath.getName());
-
-        for(File file : filesList)
-        {
-            if (m==1)
-            {
-                System.out.println(file.getName());
-            }
-            //System.out.println(file.getName());
-            if(file.getName().length()>5)
-            {
-                if(file.getName().equals("DummyJavadocClass"))
-                {
-                    System.out.println("oh man");;
-                }
-                if(file.getName().substring(file.getName().length()-4, file.getName().length()).equals("java"))
-                {
-                    parseJavaLibraries(file.getAbsolutePath());
-                    //System.out.println(file.getName());
-                }
-            }
-            else if(file.getName().equals("README.md")||file.getName().equals("readme.md")||file.getName().equals("readme.txt")||file.getName().equals("readme")
-            ||file.getName().equals("README"))
-            {
-                parseReadme (file.getAbsolutePath());
-            }
-
-            sourceCodeParser(file.getAbsolutePath());
-        }
-
-        processStringOfKeywords();*/
     }
 
     private void parseReadme(String absolutePath)

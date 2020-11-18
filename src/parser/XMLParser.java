@@ -22,6 +22,14 @@ public class XMLParser
     private Map<String, Bug> mapOfBugs = new HashMap<>();
     private Map<String, Developer> mapOfDevelopers = new HashMap<>();
 
+    private String bugReportsFilePath;
+    private String bugReportSolversFilePath;
+
+    public XMLParser(String bugReportsFilePath, String bugReportSolversFilePath) {
+        this.bugReportsFilePath = bugReportsFilePath;
+        this.bugReportSolversFilePath = bugReportSolversFilePath;
+    }
+
     private Element extractRootElement (String filepath)
     {
         File inputFile = new File(filepath);
@@ -41,7 +49,7 @@ public class XMLParser
     }
 
     private void bugDescriptionParsing () throws Exception {
-        Element root = extractRootElement("C:\\Users\\Hp\\Desktop\\fixedData.xml");
+        Element root = extractRootElement(bugReportsFilePath);
 
         List<Element> listOfBugs = root.getChildren();
 
@@ -99,7 +107,7 @@ public class XMLParser
 
     private void bugSolutionParsing ()
     {
-        Element root = extractRootElement("C:\\Users\\Hp\\Desktop\\fixedDataHistory.xml");
+        Element root = extractRootElement(bugReportSolversFilePath);
 
         List<Element> listOfBugs = root.getChildren();
 
@@ -153,43 +161,6 @@ public class XMLParser
 
                         mapOfBugs.get(bugId).getListOfSolvers().add(developerName);
                     }
-
-                    /*if (element.getChild("what").getText().equals("Resolution"))
-                    {
-                        LocalDate bugResolutionDate = LocalDate.parse(element.getChild("when").getText().substring(0,10));
-                        String developerName = element.getChild("who").getText();
-
-                        if (mapOfDevelopers.containsKey(developerName))
-                        {
-                            Developer alreadyCreatedDeveloper = mapOfDevelopers.get(developerName);
-
-                            alreadyCreatedDeveloper.getListOfBugIds().add(bugId);
-
-                            if(alreadyCreatedDeveloper.getStartDate().compareTo(bugResolutionDate)>0)
-                            {
-                                alreadyCreatedDeveloper.setStartDate(bugResolutionDate);
-                            }
-                        }
-                        else
-                        {
-                            Developer developer = new Developer(developerName, bugResolutionDate);
-
-                            developer.getListOfBugIds().add(bugId);
-
-                            mapOfDevelopers.put(developer.getName(), developer);
-                        }
-
-                        if(mapOfBugs.get(bugId).getSolutionDate()==null)
-                        {
-                            mapOfBugs.get(bugId).setSolutionDate(bugResolutionDate);
-                        }
-                        else if(mapOfBugs.get(bugId).getSolutionDate().compareTo(bugResolutionDate)<0)
-                        {
-                            mapOfBugs.get(bugId).setSolutionDate(bugResolutionDate);
-                        }
-
-                        mapOfBugs.get(bugId).getListOfSolvers().add(developerName);
-                    }*/
                 }
             }
         }

@@ -43,23 +43,46 @@ public class Test
     //private Map<String, String> mapOfDevelopersWithGithubURLs = new HashMap<>();
     private List<Bug> testBugs = new ArrayList<>();
 
-    List<String> eds = new ArrayList<>();
-    List<String> neds = new ArrayList<>();
-    List<String> fgs = new ArrayList<>();
+    private List<String> eds = new ArrayList<>();
+    private List<String> neds = new ArrayList<>();
+    private List<String> fgs = new ArrayList<>();
+
+    private int numberOfED;
+    private int numberOfNED;
+    private int numberOfFG;
+    private int numberOfTestingComponents;
+    private int numberOfTestingProducts;
+    private int numberOfExistingComponents;
+    private int numberOfExistingProducts;
+    private int numberOfTrainingBugs;
+    private int numberOfTestingBugs;
+
+    private String bugReportsFilePath;
+    private String bugReportSolversFilePath;
+    private String sourceCodeDirectory;
+    private String githubReposDirectory;
+    private int teamSizePerDeveloper;
+    private int numberOfBugSolutionNeededToUpgrade;
 
     private int iteration = 1;
 
-    Bug currentBug;
+    private Bug currentBug;
 
-    List<Result> teamResults = new ArrayList<>();
+    private List<Result> teamResults = new ArrayList<>();
     private double MRR;
     private double recall;
     private double efficiency;
     private double match;
 
-    public Test(LocalDate testingDate)
-    {
+    public Test(int teamSizePerDeveloper, int numberOfBugSolutionNeededToUpgrade, LocalDate testingDate, String bugReportsFilePath, String bugReportSolversFilePath, String sourceCodeDirectory, String githubReposDirectory) throws Exception {
+        this.teamSizePerDeveloper = teamSizePerDeveloper;
+        this.numberOfBugSolutionNeededToUpgrade = numberOfBugSolutionNeededToUpgrade;
         this.testingDate = testingDate;
+        this.bugReportsFilePath = bugReportsFilePath;
+        this.bugReportSolversFilePath = bugReportSolversFilePath;
+        this.sourceCodeDirectory = sourceCodeDirectory;
+        this.githubReposDirectory = githubReposDirectory;
+        testing();
     }
 
     public void createFreshGraduate (Developer developer)
@@ -83,13 +106,11 @@ public class Test
 
     public void chooseNewDeveloperOrFreshGraduate (Developer developer) throws Exception
     {
-        Boolean isNED = new File("C:\\Users\\Hp\\Desktop\\ClonedGitRepos\\" + developer.getName()).exists();
+        Boolean isNED = new File(githubReposDirectory + "\\" + developer.getName()).exists();
 
         if(isNED)
         {
-            System.out.println(developer.getName());
-            RepoParser rp = new RepoParser("C:\\Users\\Hp\\Desktop\\ClonedGitRepos\\" + developer.getName());
-            System.out.println(rp.getListOfLibraryImports().size()+ "----" + rp.getListOfRepositoryKeywords().size());
+            RepoParser rp = new RepoParser(githubReposDirectory + "\\" + developer.getName());
             if(rp.getListOfRepositoryKeywords().size()==0&&rp.getListOfLibraryImports().size()==0)
             {
                 createFreshGraduate(developer);
@@ -103,38 +124,13 @@ public class Test
         {
             createFreshGraduate(developer);
         }
-
-
-        /*System.out.println("-----" + mapOfDevelopersWithGithubURLs.get(developer.getName()));*/
-        /*if(mapOfDevelopersWithGithubURLs.get(developer.getName()).equals("0"))
-        {
-            createFreshGraduate(developer);
-        }
-        else
-        {
-            System.out.println(developer.getName());
-            RepoParser rp = new RepoParser("C:\\Users\\Hp\\Desktop\\ClonedGitRepos\\" + developer.getName());
-
-            //GithubParser gp = new GithubParser(mapOfDevelopersWithGithubURLs.get(developer.getName()),LocalDate.parse("2013-04-15"));
-            System.out.println(rp.getListOfLibraryImports().size()+ "----" + rp.getListOfRepositoryKeywords().size());
-            if(rp.getListOfRepositoryKeywords().size()==0&&rp.getListOfLibraryImports().size()==0)
-            {
-                createFreshGraduate(developer);
-            }
-            else
-            {
-                newExperiencedDevelopers.add(new NewDeveloper(developer,rp.getListOfRepositoryKeywords(),rp.getListOfLibraryImports()));
-            }
-        }*/
     }
 
     public void testing () throws Exception {
-        XMLParser parser = new XMLParser();
+        XMLParser parser = new XMLParser(bugReportsFilePath, bugReportSolversFilePath);
         parser.parsing();
         this.mapOfBugs = parser.getMapOfBugs();
         this.mapOfDevelopers = parser.getMapOfDevelopers();
-
-        System.out.println("cp");
 
         for(Developer developer: parser.getMapOfDevelopers().values())
         {
@@ -148,7 +144,14 @@ public class Test
             }
         }
 
-        //System.out.println("--" + experiencedDevelopers.size());
+        numberOfED = experiencedDevelopers.size();
+        numberOfNED = newExperiencedDevelopers.size();
+        numberOfFG = freshGraduates.size();
+
+        numberOfExistingProducts = existingProductCounter();
+        numberOfExistingComponents = existingComponentCounter();
+        numberOfTestingProducts = testingProductCounter();
+        numberOfTestingComponents = testingComponentCounter();
 
         for (Developer developer: experiencedDevelopers)
         {
@@ -205,11 +208,13 @@ public class Test
             }
         }
 
+        numberOfTrainingBugs = mapOfBugs.size()-testBugs.size();
+
         Collections.sort(testBugs, (o1, o2) -> o1.getSolutionDate().compareTo(o2.getSolutionDate()));
 
         System.out.println("cp3");
 
-        SourceCodeParser scp = new SourceCodeParser();
+        SourceCodeParser scp = new SourceCodeParser(sourceCodeDirectory);
 
         listOfSourceCodeLibraryImports = scp.getListOfLibraryImports();
 
@@ -229,17 +234,8 @@ public class Test
         System.out.println("fg indexed");
     }
 
-    /*private void updateDevs () throws IOException {
-        for(int i=0; i<4; i++)
-        {
-            updateED(eds.get(i));
-            updateNED(neds.get(i));
-            updateFG(fgs.get(i));
-        }
-    }*/
-
     private void updateED(String s) throws IOException {
-        String indexPath = "C:\\Users\\Hp\\Desktop\\TestBT\\src\\files\\edIndex";
+        String indexPath = "src/files/edIndex";
 
         Directory dir = FSDirectory.open(Paths.get(indexPath));
 
@@ -291,9 +287,9 @@ public class Test
             {
                 developer.getDeveloperCore().getListOfBugIds().add(currentBug.getId());
 
-                if (developer.getDeveloperCore().getListOfBugIds().size()==10)
+                if (developer.getDeveloperCore().getListOfBugIds().size()==numberOfBugSolutionNeededToUpgrade)
                 {
-                    String indexPath = "C:\\Users\\Hp\\Desktop\\TestBT\\src\\files\\nedIndex";
+                    String indexPath = "src/files/nedIndex";
 
                     Directory dir = FSDirectory.open(Paths.get(indexPath));
 
@@ -320,59 +316,6 @@ public class Test
         {
             newExperiencedDevelopers.remove(currentDev);
         }
-
-        /*String indexPath = "C:\\Users\\Hp\\Desktop\\TestBT\\src\\files\\nedIndex";
-
-        Directory dir = FSDirectory.open(Paths.get(indexPath));
-
-        Analyzer analyzer = new StandardAnalyzer();
-
-        IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
-
-        IndexWriter indexWriter = new IndexWriter(dir, iwc);
-
-        NewDeveloper currentDev = null;
-
-        for(NewDeveloper developer: newExperiencedDevelopers)
-        {
-            if(developer.getDeveloperCore().getName().equals(s))
-            {
-                Document document = new Document();
-
-                String content = "";
-
-                content = content + " " + convertListToString(developer.getListOfLibraryImports());
-                content = content + " " + convertListToString(developer.getListOfRepositoryKeywords());
-
-                developer.getDeveloperCore().getListOfBugIds().add(currentBug.getId());
-
-                document.add(new TextField("content", content, Field.Store.NO));
-                document.add(new StringField("name", developer.getDeveloperCore().getName(), Field.Store.YES));
-                document.add(new StringField("startingDate", developer.getDeveloperCore().getStartDate().toString(), Field.Store.YES));
-
-                if (developer.getDeveloperCore().getListOfBugIds().size()==10)
-                {
-                    indexWriter.deleteDocuments(new Term("name", s));
-                    currentDev = developer;
-                    experiencedDevelopers.add(developer.getDeveloperCore());
-                    updateED(developer.getDeveloperCore().getName());
-                }
-                else
-                {
-                    indexWriter.deleteDocuments(new Term("name", s));
-                    indexWriter.addDocument(document);
-                }
-
-                break;
-            }
-        }
-
-        if (currentDev!=null)
-        {
-            newExperiencedDevelopers.remove(currentDev);
-        }
-
-        indexWriter.close();*/
     }
 
     private void updateFG(String s) throws IOException {
@@ -385,9 +328,9 @@ public class Test
             {
                 developer.getDeveloperCore().getListOfBugIds().add(currentBug.getId());
 
-                if (developer.getDeveloperCore().getListOfBugIds().size()==10)
+                if (developer.getDeveloperCore().getListOfBugIds().size()==numberOfBugSolutionNeededToUpgrade)
                 {
-                    String indexPath = "C:\\Users\\Hp\\Desktop\\TestBT\\src\\files\\fgIndex";
+                    String indexPath = "src/files/fgIndex";
 
                     Directory dir = FSDirectory.open(Paths.get(indexPath));
 
@@ -414,59 +357,6 @@ public class Test
         {
             freshGraduates.remove(currentDev);
         }
-
-        /*String indexPath = "C:\\Users\\Hp\\Desktop\\TestBT\\src\\files\\fgIndex";
-
-        Directory dir = FSDirectory.open(Paths.get(indexPath));
-
-        Analyzer analyzer = new StandardAnalyzer();
-
-        IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
-
-        IndexWriter indexWriter = new IndexWriter(dir, iwc);
-
-        FreshGraduate currentDev = null;
-
-        for(FreshGraduate developer: freshGraduates)
-        {
-            if(developer.getDeveloperCore().getName().equals(s))
-            {
-                Document document = new Document();
-
-                String content = "";
-
-                content = content + " " + convertListToString(developer.getListOfKeyWords());
-
-                developer.getDeveloperCore().getListOfBugIds().add(currentBug.getId());
-
-                document.add(new TextField("content", content, Field.Store.NO));
-                document.add(new StringField("name", developer.getDeveloperCore().getName(), Field.Store.YES));
-                document.add(new StringField("startingDate", developer.getDeveloperCore().getStartDate().toString(), Field.Store.YES));
-
-                if (developer.getDeveloperCore().getListOfBugIds().size()==10)
-                {
-                    indexWriter.deleteDocuments(new Term("name", s));
-                    currentDev = developer;
-                    experiencedDevelopers.add(developer.getDeveloperCore());
-                    updateED(developer.getDeveloperCore().getName());
-                }
-                else
-                {
-                    //indexWriter.updateDocument(new Term("name", s), document);
-                    indexWriter.deleteDocuments(new Term("name", s));
-                    indexWriter.addDocument(document);
-                }
-
-                break;
-            }
-        }
-
-        if (currentDev!=null)
-        {
-            freshGraduates.remove(currentDev);
-        }
-
-        indexWriter.close();*/
     }
 
     private void teamResult () throws IOException, ParseException {
@@ -487,7 +377,7 @@ public class Test
                 readFgIndex(testBug);
             }
 
-            if(eds.size()+neds.size()+fgs.size()<30)
+            if(eds.size()+neds.size()+fgs.size()<teamSizePerDeveloper*3)
             {
                 eds.clear();
                 neds.clear();
@@ -496,11 +386,7 @@ public class Test
                 continue;
             }
 
-            /*System.out.println("-----"+eds.size());
-            System.out.println(neds.size());
-            System.out.println(fgs.size()+"-----");*/
-
-            Result result = new Result(eds,neds,fgs,testBug);
+            Result result = new Result(eds,neds,fgs,testBug, teamSizePerDeveloper);
 
             teamResults.add(result);
 
@@ -534,14 +420,14 @@ public class Test
             neds.clear();
             fgs.clear();
 
-            /*System.out.println("result done" + testBug);*/
-
             iteration++;
         }
 
         testBugs.removeAll(poorBugs);
 
         System.out.println(testBugs.size());
+
+        numberOfTestingBugs = testBugs.size();
 
         harmonicAverageResult();
     }
@@ -569,13 +455,6 @@ public class Test
         match = avgMatch/teamResults.size();
         efficiency = teamResults.size()/avgEfficiency;
         MRR = avgMRR/teamResults.size();
-
-        /*teamPrecision.add(Double.toString(avgPrecision));
-        teamRecall.add(Double.toString(avgRecall));
-        teamFScore.add(Double.toString(avgFScore));
-        avgTopNForSortedResult.add(Double.toString(avgTopN));
-        avgEfficiencyList.add(Double.toString(avgEfficiency));
-        avgMRRList.add(Double.toString(avgMRR));*/
     }
 
     private void averageResult()
@@ -601,13 +480,6 @@ public class Test
         match = avgMatch/teamResults.size();
         efficiency = avgEfficiency/teamResults.size();
         MRR = avgMRR/teamResults.size();
-
-        /*teamPrecision.add(Double.toString(avgPrecision));
-        teamRecall.add(Double.toString(avgRecall));
-        teamFScore.add(Double.toString(avgFScore));
-        avgTopNForSortedResult.add(Double.toString(avgTopN));
-        avgEfficiencyList.add(Double.toString(avgEfficiency));
-        avgMRRList.add(Double.toString(avgMRR));*/
     }
 
     public void outputResult () throws IOException {
@@ -628,35 +500,8 @@ public class Test
                 + "Average Effectiveness: " + efficiency + "\n"
                 + "\n" + "\n"
                 + "Mean Reciprocal Rank: " + MRR + "\n";
-                /*+ "----" + "k" + "----" + "avg recall" + "----" + "avg precision" + "----" + "avg f-score" + "----" + "\n"
-                + "----" + 3 + "----" + teamRecall.get(0).substring(0,5) + "----" + teamPrecision.get(0).substring(0,5) + "----" + teamFScore.get(0).substring(0,5) + "----" + "\n"
-                + "----" + 6 + "----" + teamRecall.get(1).substring(0,5) + "----" + teamPrecision.get(1).substring(0,5) + "----" + teamFScore.get(1).substring(0,5) + "----" + "\n"
-                + "----" + 9 + "----" + teamRecall.get(2).substring(0,5) + "----" + teamPrecision.get(2).substring(0,5) + "----" + teamFScore.get(2).substring(0,5) + "----" + "\n"
-                + "----" + 12 + "----" + teamRecall.get(3).substring(0,5) + "----" + teamPrecision.get(3).substring(0,5) + "----" + teamFScore.get(3).substring(0,5) + "----" + "\n"
-                + "----" + 15 + "----" + teamRecall.get(4).substring(0,5) + "----" + teamPrecision.get(4).substring(0,5) + "----" + teamFScore.get(4).substring(0,5) + "----" + "\n"
-                + "\n" + "\n"
-                + "No. of test reports: " + testBugs.size() + "\n"
-                + "Top 1: " + avgTopNForSortedResult.get(0).substring(0,5) + "\n"
-                + "Top 2: " + avgTopNForSortedResult.get(1).substring(0,5) + "\n"
-                + "Top 3: " + avgTopNForSortedResult.get(2).substring(0,5) + "\n"
-                + "Top 4: " + avgTopNForSortedResult.get(3).substring(0,5) + "\n"
-                + "Top 5: " + avgTopNForSortedResult.get(4).substring(0,5) + "\n"
-                + "\n" + "\n"
-                + "Average Effectiveness: " + "\n"
-                + "Top 1: " + avgEfficiencyList.get(0).substring(0,5) + "\n"
-                + "Top 2: " + avgEfficiencyList.get(1).substring(0,5) + "\n"
-                + "Top 3: " + avgEfficiencyList.get(2).substring(0,5) + "\n"
-                + "Top 4: " + avgEfficiencyList.get(3).substring(0,5) + "\n"
-                + "Top 5: " + avgEfficiencyList.get(4).substring(0,5) + "\n"
-                + "\n" + "\n"
-                + "Mean Reciprocal Rank: " + "\n"
-                + "Top 1: " + avgMRRList.get(0).substring(0,5) + "\n"
-                + "Top 2: " + avgMRRList.get(1).substring(0,5) + "\n"
-                + "Top 3: " + avgMRRList.get(2).substring(0,5) + "\n"
-                + "Top 4: " + avgMRRList.get(3).substring(0,5) + "\n"
-                + "Top 5: " + avgMRRList.get(4).substring(0,5) + "\n";*/
 
-        File file = new File("C:\\Users\\Hp\\Desktop\\TestBT\\src\\files\\output");
+        File file = new File("src/files/output");
         if (!file.exists()) {
             file.createNewFile();
         }
@@ -735,7 +580,7 @@ public class Test
     }
 
     public void readEdIndex (Bug testBug) throws IOException, ParseException {
-        String indexPath = "C:\\Users\\Hp\\Desktop\\TestBT\\src\\files\\edIndex";
+        String indexPath = "src/files/edIndex";
 
         Directory dir = FSDirectory.open(Paths.get(indexPath));
 
@@ -752,31 +597,19 @@ public class Test
             bq.add(new BooleanClause(new TermQuery(new Term("content", s)), BooleanClause.Occur.SHOULD));
         }
 
-        //bq.add(new BooleanClause(new TermQuery(new Term("content", "*")), BooleanClause.Occur.SHOULD));
-
-        //QueryParser qp = new QueryParser("content", new StandardAnalyzer());
-
-        //System.out.println(convertListToQuery(testBugs.get(0).getListOfKeywords()));
-
-        //Query query = qp.parse(convertListToQuery(testBugs.get(0).getListOfKeywords())); //syntax
-
         TopDocs results = searcher.search(bq.build(), experiencedDevelopers.size());
 
         for(ScoreDoc scoreDoc: results.scoreDocs)
         {
             Document document = searcher.doc(scoreDoc.doc);
             eds.add(document.get("name"));
-            /*System.out.println(document.get("name"));
-            System.out.println(scoreDoc.doc);
-            System.out.println(scoreDoc.score);
-            System.out.println("----------");*/
         }
 
         directoryReader.close();
     }
 
     private void readNedIndex (Bug testBug) throws IOException, ParseException {
-        String indexPath = "C:\\Users\\Hp\\Desktop\\TestBT\\src\\files\\nedIndex";
+        String indexPath = "src/files/nedIndex";
 
         Directory dir = FSDirectory.open(Paths.get(indexPath));
 
@@ -798,25 +631,19 @@ public class Test
             bq.add(new BooleanClause(new TermQuery(new Term("content", s)), BooleanClause.Occur.SHOULD));
         }
 
-        //bq.add(new BooleanClause(new TermQuery(new Term("content", "*")), BooleanClause.Occur.SHOULD));
-
         TopDocs results = searcher.search(bq.build(), newExperiencedDevelopers.size());
 
         for(ScoreDoc scoreDoc: results.scoreDocs)
         {
             Document document = searcher.doc(scoreDoc.doc);
             neds.add(document.get("name"));
-            //System.out.println("------------------" + neds.size());
-            /*System.out.println(document.get("name"));
-            System.out.println(scoreDoc.doc);
-            System.out.println(scoreDoc.score);*/
         }
 
         directoryReader.close();
     }
 
     private void readFgIndex (Bug testBug) throws IOException, ParseException {
-        String indexPath = "C:\\Users\\Hp\\Desktop\\TestBT\\src\\files\\fgIndex";
+        String indexPath = "src/files/fgIndex";
 
         Directory dir = FSDirectory.open(Paths.get(indexPath));
 
@@ -833,21 +660,12 @@ public class Test
             bq.add(new BooleanClause(new TermQuery(new Term("content", s)), BooleanClause.Occur.SHOULD));
         }
 
-        //bq.add(new BooleanClause(new TermQuery(new Term("content", "*")), BooleanClause.Occur.SHOULD));
-
         TopDocs results = searcher.search(bq.build(), freshGraduates.size());
-        //System.out.println(results.totalHits.value);
 
         for(ScoreDoc scoreDoc: results.scoreDocs)
         {
             Document document = searcher.doc(scoreDoc.doc);
-            //System.out.println(document);
             fgs.add(document.get("name"));
-            //System.out.println("read " + document.get("name"));
-            //System.out.println("------------------" + fgs.size());
-            /*System.out.println(document.get("name"));
-            System.out.println(scoreDoc.doc);
-            System.out.println(scoreDoc.score);*/
         }
 
         directoryReader.close();
@@ -876,7 +694,7 @@ public class Test
     }
 
     public void edIndexing() throws IOException {
-        String indexPath = "C:\\Users\\Hp\\Desktop\\TestBT\\src\\files\\edIndex";
+        String indexPath = "src/files/edIndex";
 
         deleteIndex(indexPath);
 
@@ -916,7 +734,7 @@ public class Test
     }
 
     private void nedIndexing() throws IOException {
-        String indexPath = "C:\\Users\\Hp\\Desktop\\TestBT\\src\\files\\nedIndex";
+        String indexPath = "src/files/nedIndex";
 
         deleteIndex(indexPath);
 
@@ -949,7 +767,7 @@ public class Test
     }
 
     private void fgIndexing() throws IOException {
-        String indexPath = "C:\\Users\\Hp\\Desktop\\TestBT\\src\\files\\fgIndex";
+        String indexPath = "src/files/fgIndex";
 
         deleteIndex(indexPath);
 
@@ -978,5 +796,97 @@ public class Test
         }
 
         indexWriter.close();
+    }
+
+    public int getNumberOfED() {
+        return numberOfED;
+    }
+
+    public int getNumberOfNED() {
+        return numberOfNED;
+    }
+
+    public int getNumberOfFG() {
+        return numberOfFG;
+    }
+
+    public int getNumberOfTestingComponents() {
+        return numberOfTestingComponents;
+    }
+
+    public int getNumberOfTestingProducts() {
+        return numberOfTestingProducts;
+    }
+
+    public int getNumberOfExistingComponents() {
+        return numberOfExistingComponents;
+    }
+
+    public int getNumberOfExistingProducts() {
+        return numberOfExistingProducts;
+    }
+
+    public int getNumberOfTrainingBugs() {
+        return numberOfTrainingBugs;
+    }
+
+    public LocalDate getTestingDate() {
+        return testingDate;
+    }
+
+    public Map<String, Bug> getMapOfBugs() {
+        return mapOfBugs;
+    }
+
+    public Map<String, Developer> getMapOfDevelopers() {
+        return mapOfDevelopers;
+    }
+
+    public List<String> getListOfSourceCodeLibraryImports() {
+        return listOfSourceCodeLibraryImports;
+    }
+
+    public String getBugReportsFilePath() {
+        return bugReportsFilePath;
+    }
+
+    public String getBugReportSolversFilePath() {
+        return bugReportSolversFilePath;
+    }
+
+    public String getSourceCodeDirectory() {
+        return sourceCodeDirectory;
+    }
+
+    public String getGithubReposDirectory() {
+        return githubReposDirectory;
+    }
+
+    public int getTeamSizePerDeveloper() {
+        return teamSizePerDeveloper;
+    }
+
+    public int getNumberOfBugSolutionNeededToUpgrade() {
+        return numberOfBugSolutionNeededToUpgrade;
+    }
+
+    public double getMRR() {
+        return MRR;
+    }
+
+    public double getRecall() {
+        return recall;
+    }
+
+    public double getEfficiency() {
+        return efficiency;
+    }
+
+    public double getMatch() {
+        return match;
+    }
+
+    public int getNumberOfTestingBugs() {
+        return numberOfTestingBugs;
     }
 }

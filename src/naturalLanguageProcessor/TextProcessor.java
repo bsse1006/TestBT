@@ -45,7 +45,7 @@ public class TextProcessor
 
     private void stopWordsFileToList () throws Exception {
 
-        String data = readFileAsString("C:\\Users\\Hp\\Desktop\\TestBT\\src\\files\\stopWords.txt");
+        String data = readFileAsString("src/files/stopWords.txt");
 
         StringTokenizer st = new StringTokenizer(data);
         while (st.hasMoreTokens())

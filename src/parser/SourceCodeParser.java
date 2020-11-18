@@ -17,16 +17,22 @@ import java.util.*;
 public class SourceCodeParser
 {
     private List<String> listOfLibraryImports = new ArrayList<>();
+    private String folderPath;
 
-    public SourceCodeParser () throws Exception
+    public SourceCodeParser (String folderPath) throws Exception
     {
+        this.folderPath = folderPath;
         sourceCodeParser();
     }
 
     private void sourceCodeParser () throws Exception
     {
+        importParser(folderPath);
+
+        print();
+
         String data = "";
-        data = new String(Files.readAllBytes(Paths.get("C:\\Users\\Hp\\Desktop\\TestBT\\src\\files\\sourceCodeLibraryList")));
+        data = new String(Files.readAllBytes(Paths.get("src/files/sourceCodeLibraryList")));
 
         StringTokenizer st = new StringTokenizer(data);
         while (st.hasMoreTokens())
@@ -38,8 +44,6 @@ public class SourceCodeParser
     public List<String> getListOfLibraryImports() {
         return listOfLibraryImports;
     }
-
-    /*
 
     public void parseJavaLibraries (String javaFIlePath) throws FileNotFoundException
     {
@@ -67,9 +71,12 @@ public class SourceCodeParser
                 ex.printStackTrace();
             }
         }
+        catch (Error e) {
+                e.printStackTrace();
+        }
     }
 
-    public void sourceCodeParser (String folderPath) throws FileNotFoundException
+    public void importParser (String folderPath) throws FileNotFoundException
     {
         File directoryPath = new File(folderPath);
 
@@ -79,31 +86,28 @@ public class SourceCodeParser
         {
             return;
         }
-        System.out.println("-------------------" + directoryPath.getName());
 
         for(File file : filesList)
         {
-            System.out.println(file.getName());
             if(file.getName().length()>5)
             {
                 if(file.getName().substring(file.getName().length()-4, file.getName().length()).equals("java"))
                 {
                     parseJavaLibraries(file.getAbsolutePath());
-                    //System.out.println(file.getName());
                 }
             }
 
-            sourceCodeParser(file.getAbsolutePath());
+            importParser(file.getAbsolutePath());
         }
     }
 
     public void print () throws Exception
     {
-        File file = new File("C:\\Users\\Hp\\Desktop\\BugTriaging\\src\\files\\sourceCodeLibraryList");
+        File file = new File("src/files/sourceCodeLibraryList");
         if (!file.exists()) {
             file.createNewFile();
         }
-        FileWriter fw = new FileWriter(file.getAbsoluteFile(), true);
+        FileWriter fw = new FileWriter(file.getAbsoluteFile());
         BufferedWriter bw = new BufferedWriter(fw);
         for (String s: listOfLibraryImports)
         {
@@ -111,7 +115,5 @@ public class SourceCodeParser
             bw.newLine();
         }
         bw.close();
-
-        System.out.println("Done");
-    }*/
+    }
 }

@@ -13,6 +13,7 @@ public class Result
     List<String> neds;
     List<String> fgs;
     Bug testBug;
+    int teamSizePerDeveloper;
     /*List<String> precision = new ArrayList<>();
     List<String> recall = new ArrayList<>();
     List<String> fScore = new ArrayList<>();
@@ -22,15 +23,17 @@ public class Result
 
     double recall;
 
-    double rank = 31;
+    double rank;
 
     int match = 0;
 
-    public Result(List<String> eds, List<String> neds, List<String> fgs, Bug testBug) {
+    public Result(List<String> eds, List<String> neds, List<String> fgs, Bug testBug, int teamSizePerDeveloper) {
         this.eds = eds;
         this.neds = neds;
         this.fgs = fgs;
         this.testBug = testBug;
+        this.teamSizePerDeveloper = teamSizePerDeveloper;
+        rank = teamSizePerDeveloper*3 + 1;
         sortDevs();
         calcRecall();
         rankSum();
@@ -38,7 +41,7 @@ public class Result
 
     private void rankSum()
     {
-        for (int i=0; i<30; i++)
+        for (int i=0; i<teamSizePerDeveloper*3; i++)
         {
             if(testBug.getListOfSolvers().contains(sortedDevs.get(i)))
             {
@@ -53,22 +56,22 @@ public class Result
     {
         for (int i=0; ; i++)
         {
-            if (eds.size()>i&&sortedDevs.size()<30)
+            if (eds.size()>i&&sortedDevs.size()<teamSizePerDeveloper*3)
             {
                 sortedDevs.add(eds.get(i));
             }
 
-            if (neds.size()>i&&sortedDevs.size()<30)
+            if (neds.size()>i&&sortedDevs.size()<teamSizePerDeveloper*3)
             {
                 sortedDevs.add(neds.get(i));
             }
 
-            if (fgs.size()>i&&sortedDevs.size()<30)
+            if (fgs.size()>i&&sortedDevs.size()<teamSizePerDeveloper*3)
             {
                 sortedDevs.add(fgs.get(i));
             }
 
-            if (sortedDevs.size()>=30)
+            if (sortedDevs.size()>=teamSizePerDeveloper*3)
             {
                 break;
             }

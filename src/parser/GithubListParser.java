@@ -17,15 +17,24 @@ public class GithubListParser
         return mapOfDevelopersWithGithubURLs;
     }
 
+    private String filePath;
+    private LocalDate testingDate;
+
+    public GithubListParser(String filePath, LocalDate testingDate) throws IOException, InterruptedException {
+        this.filePath = filePath;
+        this.testingDate = testingDate;
+        parseGithubList();
+    }
+
     public void parseGithubList () throws IOException, InterruptedException {
         String data = "";
-        data = new String(Files.readAllBytes(Paths.get("C:\\Users\\Hp\\Desktop\\TestBT\\src\\files\\githubURL.txt")));
+        data = new String(Files.readAllBytes(Paths.get(filePath)));
 
         StringTokenizer st = new StringTokenizer(data);
 
         String content = "";
 
-        File file = new File("C:\\Users\\Hp\\Desktop\\TestBT\\src\\files\\GitRepos");
+        File file = new File("src/files/GitRepos");
         if (!file.exists()) {
             file.createNewFile();
         }
@@ -42,15 +51,11 @@ public class GithubListParser
             }
 
             content = content + key + "\n";
-
-            System.out.println("in");
-            System.out.println(key + "-----" + value);
-            GithubParser gp = new GithubParser(value, LocalDate.parse("2013-04-15"));
-            System.out.println("out");
+            GithubParser gp = new GithubParser(value, testingDate);
 
             content = content + gp.getRepoLinks();
 
-            FileWriter fw = new FileWriter(file.getAbsoluteFile(),true);
+            FileWriter fw = new FileWriter(file.getAbsoluteFile());
             BufferedWriter bw = new BufferedWriter(fw);
             bw.write(content);
             bw.close();

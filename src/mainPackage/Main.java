@@ -25,6 +25,8 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -34,9 +36,14 @@ public class Main
 {
     public static void main(String[] args) throws Exception
     {
-        Test test = new Test(LocalDate.parse("2013-04-15"));
-        test.testing();
+        GithubListParser glp = new GithubListParser("C:\\Users\\Hp\\Desktop\\TestBT\\src\\files\\githubURL.txt", LocalDate.parse("2020-04-15"));
+        CloneGitRepos cgr = new CloneGitRepos("C:\\Users\\Hp\\Desktop\\TestClonedGitRepos");
 
+        Test test = new Test(10, 10, LocalDate.parse("2013-04-15"), "src/files/fixedData.xml",
+                "src/files/fixedDataHistory.xml", "C:\\Users\\Hp\\Desktop\\TestClonedGitRepos",
+                "C:\\Users\\Hp\\Desktop\\TestClonedGitRepos");
+
+        
         /*XMLParser parser = new XMLParser();
         parser.parsing();
 
